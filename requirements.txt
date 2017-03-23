@@ -1,0 +1,5 @@
+beautifulsoup4==4.5.3
+html5lib==0.999999999
+requests==2.13.0
+tornado==4.4.2
+webencodings==0.5
