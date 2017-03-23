@@ -10,23 +10,24 @@ def h_com():
     soup = BeautifulSoup(html_doc, 'html5lib')
     list_of_events = []
     for element in soup.find('div', attrs={'id': 'hackathonList'}).children:
-        list_of_events.append({})
-        mny = element.find('div', 'hackathon-date-month-year').text[:-1 * len(element.find('div', 'hackathon-date-day').text)]
+        event = {}
+        mny = element.find('div', attrs={'class':'hackathon-date-month-year'}).find(text=True, recursive=False)
         date = element.find('div', 'hackathon-date-day').text + ' ' + mny
-        list_of_events[-1]['start_date'] = date.replace('\xa0', ' ')
-        list_of_events[-1]['end_date'] = list_of_events[-1]['start_date']
-        list_of_events[-1]['name'] = element.find('p', 'hackathon-name').text
-        list_of_events[-1]['location'] = element.find('p', 'hackathon-location').text.replace(' -  ', ',')
-        list_of_events[-1]['description'] = element.find('p', 'hackathon-desc hidden-xs').text.replace('\xa0', ' ')
+        event['start_date'] = date.replace('\xa0', ' ')
+        event['end_date'] = event['start_date']
+        event['name'] = element.find('p', 'hackathon-name').text
+        event['location'] = element.find('p', 'hackathon-location').text.replace(' -  ', ',')
+        event['description'] = element.find('p', 'hackathon-desc hidden-xs').text.replace('\xa0', ' ')
         if element.find('p', 'hidden-xs hackathon-tags'):
-            list_of_events[-1]['tags'] = [i.text for i in element.find('p', 'hidden-xs hackathon-tags').children]
+            event['tags'] = [i.text for i in element.find('p', 'hidden-xs hackathon-tags').children]
         else:
-            list_of_events[-1]['tags'] = []
+            event['tags'] = []
         html_link = requests.get('http://www.hackathon.com' + element.find('p', 'hackathon-name').find('a')['href'])
         soup_link = BeautifulSoup(html_link.text, 'html5lib')
-        list_of_events[-1]['url'] = soup_link.find('div', 'detail-buttons').find('a')['href']
-        list_of_events[-1]['type'] = 'hackathon'
-        list_of_events[-1]['deadline'] = None
+        event['url'] = soup_link.find('div', 'detail-buttons').find('a')['href']
+        event['type'] = 'hackathon'
+        event['deadline'] = None
+        list_of_events.append(event)
     return list_of_events
 
 
@@ -73,3 +74,4 @@ def vencity():
         list_of_events[-1]['description'] = soup_link.find('div', 'box_style_1')('p')[0].text
         list_of_events[-1]['location'] = soup_link.find('p', attrs={'id': 'challenge-location'}).text
     return list_of_events
+
