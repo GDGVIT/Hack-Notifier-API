@@ -12,7 +12,7 @@ define("port", default=8000, help="runs on the given port", type=int)
 class IndexHandler(tornado.web.RequestHandler):
     def write_error(self, status_code, **kwargs):
         if status_code == 404:
-            self.write({"status_code": status_code, "status_message": "Page not found"})
+            self.write({"status_code": status_code, "status_message": self._reason})
         elif status_code == 500:
             self.write({"status_code": status_code, "status_message": "Scraping Error"})
 
@@ -22,17 +22,26 @@ class ErrorHandler(tornado.web.ErrorHandler, IndexHandler):
 
 class AllTypes(IndexHandler):
     def get(self):
-        self.write({"status_code": 200, "status_message": "ok", "list": hcom.h_com() + hcom.guide_conf() + hcom.vencity()})
+        try:
+            self.write({"status_code": 200, "status_message": self._reason, "list": hcom.h_com() + hcom.guide_conf() + hcom.vencity()})
+        except:
+            raise tornado.web.HTTPError(500)
 
 
 class hacks(IndexHandler):
     def get(self):
-        self.write({"status_code": 200, "status_message": "ok", "list": hcom.h_com() + hcom.vencity()})
+        try:
+            self.write({"status_code": 200, "status_message": self._reason, "list": hcom.h_com() + hcom.vencity()})
+        except:
+            raise tornado.web.HTTPError(500)
 
 
 class conf(IndexHandler):
     def get(self):
-        self.write({"status_code": 200, "status_message": "ok", "list": hcom.guide_conf()})
+        try:
+            self.write({"status_code": 200, "status_message": self._reason, "list": hcom.guide_conf()})
+        except:
+            raise tornado.web.HTTPError(500)
 
 
 if __name__ == "__main__":
