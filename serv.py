@@ -16,6 +16,7 @@ class IndexHandler(tornado.web.RequestHandler):
         elif status_code == 500:
             self.write({"status_code": status_code, "status_message": "Scraping Error"})
 
+
 class ErrorHandler(tornado.web.ErrorHandler, IndexHandler):
     pass
 
@@ -28,7 +29,7 @@ class AllTypes(IndexHandler):
             raise tornado.web.HTTPError(500)
 
 
-class hacks(IndexHandler):
+class Hacks(IndexHandler):
     def get(self):
         try:
             self.write({"status_code": 200, "status_message": self._reason, "list": hcom.h_com() + hcom.vencity()})
@@ -36,7 +37,7 @@ class hacks(IndexHandler):
             raise tornado.web.HTTPError(500)
 
 
-class conf(IndexHandler):
+class Conf(IndexHandler):
     def get(self):
         try:
             self.write({"status_code": 200, "status_message": self._reason, "list": hcom.guide_conf()})
@@ -53,8 +54,8 @@ if __name__ == "__main__":
     app = tornado.web.Application(
         handlers=[
             (r"/", AllTypes),
-            (r"/hackathons", hacks),
-            (r"/conferences", conf)
+            (r"/hackathons", Hacks),
+            (r"/conferences", Conf)
         ], **settings
     )
     http_server = tornado.httpserver.HTTPServer(app)
