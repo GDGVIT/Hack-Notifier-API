@@ -7,6 +7,7 @@ import tornado.auth
 import tornado.gen
 
 from oauth2client import client, crypt
+from pymongo import MongoClient
 from tornado.options import define, options
 
 CLIENT_ID = "284523515321-t0ugfeortsj0008gm63gs64153nm5omf.apps.googleusercontent.com"
@@ -19,6 +20,8 @@ class IndexHandler(tornado.web.RequestHandler):
             self.write({"status_code": status_code, "status_message": self._reason})
         elif status_code == 500:
             self.write({"status_code": status_code, "status_message": "Scraping Error"})
+        elif status_code == 400:
+            self.write({"status_code": status_code, "status_message": self._reason})
 
 
 class ErrorHandler(tornado.web.ErrorHandler, IndexHandler):
@@ -28,17 +31,41 @@ class ErrorHandler(tornado.web.ErrorHandler, IndexHandler):
 class AuthHandler(tornado.web.RequestHandler):
     def prepare(self):
         self.token = self.get_argument('token')
+        posts = db.posts
+        result = posts.find_one({'token': self.token})
+
+        if result is None:
+            raise tornado.web.HTTPError(400)
+
+
+
+class CreateAccount(IndexHandler):
+    def prepare(self):
+        self.token = self.get_argument('token')
+        posts = db.posts
+        result = posts.find_one({'token': self.token})
+        if not (result is None):
+            raise tornado.web.HTTPError(400)
+
         try:
-            idinfo = client.verify_id_token(self.token, CLIENT_ID)
-            if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+            self.idinfo = client.verify_id_token(self.token, CLIENT_ID)
+            if self.idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
                 raise crypt.AppIdentityError('Wrong issuer.')
 
         except crypt.AppIdentityError as e:
-            self.set_status(401)
-            self.write({"status_code": 401, "status_message": self._reason})
+            raise tornado.web.HTTPError(400, reason=e)
 
     def post(self):
-        pass
+        email = self.idinfo['email']
+        name = self.idinfo['name']
+
+        posts = db.posts
+        post_data = {
+            'token': self.token,
+            'name': name,
+            'email': email
+        }
+        posts.insert_one(post_data)
 
 
 class AllTypes(IndexHandler, AuthHandler):
@@ -69,6 +96,10 @@ class Conf(IndexHandler, AuthHandler):
 
 
 if __name__ == "__main__":
+    mclient = MongoClient()
+    db = mclient['users']
+    x = db.posts
+    x.insert_one({'token': 'abc', 'email': 'sam@a.com', 'name': 'samtan'})
     tornado.options.parse_command_line()
     settings = {
         'default_handler_class': ErrorHandler,
