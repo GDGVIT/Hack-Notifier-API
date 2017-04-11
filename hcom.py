@@ -1,5 +1,11 @@
 from bs4 import BeautifulSoup
 import requests
+from selenium import webdriver
+import json
+import os
+import html5lib
+
+
 
 
 # List of things to scrape
@@ -80,6 +86,42 @@ def vencity():
 
         list_of_events.append(event)
     return list_of_events
+
+def hackerearth():
+    path = r"./chromedriver"
+    wd = webdriver.Chrome(path)
+    wd.get("https://www.hackerearth.com/hackathons/")
+
+    html = wd.page_source
+    html = html[html.index("""<script type="application/ld+json">"""):]
+    html = html[:html.index("</script>")]
+
+    soup = BeautifulSoup(html, 'html5lib')
+
+    soup_str = str(soup)
+    soup_str = soup_str.replace('\n', ' ')
+    soup_str = soup_str.replace(' ', '')
+    soup_str = soup_str.replace(',', ', ')
+    soup_str = soup_str.replace('\"', "'")
+    soup_str = soup_str.replace("',", "',\n")
+    soup_str = soup_str.replace("},", "},\n\n")
+    soup_str = soup_str.replace('\"', "'")
+    soup_str = soup_str[soup_str.index("{'@type'"):]
+
+    list1 = []
+
+    if(not 'output' in os.listdir(r"./")):
+        os.mkdir(r"./output", 0o777)
+
+    for k in soup_str.split('},\n\n'):
+        k = k + '}'
+        k = k.replace(',\n', ', ')
+        list1.append(k)
+
+
+    with open(r'./output/testjson.json', 'w') as file:
+        json.dump(list1, file)
+        file.close()
 
 
 if __name__ == "__main__":
