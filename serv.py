@@ -1,18 +1,28 @@
 import hcom
-import tornado.httpserver
-import tornado.ioloop
-import tornado.web
-import tornado.options
+import os
 import tornado.auth
 import tornado.gen
+import tornado.httpserver
+import tornado.ioloop
+import tornado.options
+import tornado.web
 
 from oauth2client import client, crypt
 from pymongo import MongoClient
 from tornado.options import define, options
 
-CLIENT_ID = "284523515321-t0ugfeortsj0008gm63gs64153nm5omf.apps.googleusercontent.com"
+CLIENT_ID = os.environ['CLIENT_ID']
 define("port", default=8000, help="runs on the given port", type=int)
 
+dbuser = os.environ['dbuser']
+dbpass = os.environ['dbpass']
+uri = r"mongodb://" + dbuser + r":" + dbpass + r"@ds163340.mlab.com:63340/users"
+
+mclient = MongoClient(uri,
+                      connectTimeoutMS=30000,
+                      socketTimeoutMS=None,
+                      socketKeepAlive=True)
+db = mclient.get_default_database()
 
 class IndexHandler(tornado.web.RequestHandler):
     def write_error(self, status_code, **kwargs):
@@ -31,8 +41,7 @@ class ErrorHandler(tornado.web.ErrorHandler, IndexHandler):
 class AuthHandler(tornado.web.RequestHandler):
     def prepare(self):
         self.token = self.get_argument('token')
-        posts = db.posts
-        result = posts.find_one({'token': self.token})
+        result = db.users.find_one({'token': self.token})
 
         if result is None:
             raise tornado.web.HTTPError(400)
@@ -96,10 +105,6 @@ class Conf(IndexHandler, AuthHandler):
 
 
 if __name__ == "__main__":
-    mclient = MongoClient()
-    db = mclient['users']
-    x = db.posts
-    x.insert_one({'token': 'abc', 'email': 'sam@a.com', 'name': 'samtan'})
     tornado.options.parse_command_line()
     settings = {
         'default_handler_class': ErrorHandler,
