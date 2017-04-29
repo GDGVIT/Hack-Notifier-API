@@ -67,14 +67,12 @@ class CreateAccount(IndexHandler):
     def post(self):
         email = self.idinfo['email']
         name = self.idinfo['name']
-
-        posts = db.posts
         post_data = {
             'token': self.token,
             'name': name,
             'email': email
         }
-        posts.insert_one(post_data)
+        db.users.insert_one(post_data)
 
 
 class AllTypes(IndexHandler, AuthHandler):
