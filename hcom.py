@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from datetime import datetime
 import requests
 
 
@@ -7,25 +8,37 @@ import requests
 
 
 def h_com():
-    html_doc = requests.get('http://www.hackathon.com/country/india').text
+    html_doc = requests.get('https://www.hackathon.com/country/india', verify=False).text
+    # return
     soup = BeautifulSoup(html_doc, 'html5lib')
     list_of_events = []
-    for element in soup.find('div', attrs={'id': 'hackathonList'}).children:
+    # print(soup)
+    for element in soup.find_all('div', attrs={'class': 'row'})[4].find('div', attrs={'class': 'row align-center'}):
+        # return
         event = {}
-        mny = element.find('div', attrs={'class': 'hackathon-date-month-year'}).find(text=True, recursive=False)
-        date = element.find('div', 'hackathon-date-day').text + ' ' + mny
-        event['start_date'] = date.replace('\xa0', ' ')
-        event['end_date'] = event['start_date']
-        event['name'] = element.find('p', 'hackathon-name').text
-        event['location'] = element.find('p', 'hackathon-location').text.replace(' -  ', ',')
-        event['description'] = element.find('p', 'hackathon-desc hidden-xs').text.replace('\xa0', ' ')
-        if element.find('p', 'hidden-xs hackathon-tags'):
-            event['tags'] = [i.text for i in element.find('p', 'hidden-xs hackathon-tags').children]
+        try:
+            st, en = element.find('div', attrs={'class': 'ht-eb-card__date'}).contents
+        except ValueError:
+            event['end_date'] = None
+        else:
+            event['end_date'] = ''
+        std = st.find('div', attrs={'class': 'date__day'}).text + ' ' + st.find('div',
+                                                                                attrs={'class': 'date__month'}).text
+        event['start_date'] = std + " " + str(datetime.now().year)
+
+        if event["end_date"] is not None:
+            end = en.find('div', attrs={'class': 'date__day'}).text + ' ' + st.find('div',
+                                                                                attrs={'class': 'date__month'}).text
+            event['end_date'] = end + " " + str(datetime.now().year)
+        # print(element)
+        event['name'] = element.find('a', attrs={'class': 'ht-eb-card__title'}).text
+        event['location'] = element.find('span', 'ht-eb-card__location__place').text
+        event['description'] = element.find('div', attrs={'class','ht-eb-card__description'}).text.replace('\xa0','')
+        if element.find('div', attrs={'class': 'ht-card-tags'}):
+            event['tags'] = [i.text for i in element.find('div', attrs={'class': 'ht-card-tags'}).children]
         else:
             event['tags'] = []
-        html_link = requests.get('http://www.hackathon.com' + element.find('p', 'hackathon-name').find('a')['href'])
-        soup_link = BeautifulSoup(html_link.text, 'html5lib')
-        event['url'] = soup_link.find('div', 'detail-buttons').find('a')['href']
+        event['url'] = None
         event['type'] = 'hackathon'
         event['deadline'] = None
         list_of_events.append(event)
@@ -84,5 +97,5 @@ def vencity():
 
 if __name__ == "__main__":
     print(h_com())
-    print(guide_conf())
-    print(vencity())
+    # print(guide_conf())
+    # print(vencity())
