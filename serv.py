@@ -1,4 +1,5 @@
 import hcom
+import os
 import tornado.auth
 import tornado.gen
 import tornado.httpserver
@@ -25,25 +26,25 @@ class ErrorHandler(tornado.web.ErrorHandler, IndexHandler):
     pass
 
 
-class AllTypes(IndexHandler, AuthHandler):
+class AllTypes(IndexHandler):
     def get(self):
         try:
             #  Writes all the events as a JSON
-            self.write({"status_code": 200, "status_message": self._reason, "list": hcom.guide_conf() + hcom.vencity()})
+            self.write({"status_code": 200, "status_message": self._reason, "list": hcom.h_com() + hcom.guide_conf() + hcom.vencity()})
         except:
             raise tornado.web.HTTPError(500)
 
 
-class Hacks(IndexHandler, AuthHandler):
+class Hacks(IndexHandler):
     def get(self):
         try:
             #  Writes all the hackathons as a JSON
-            self.write({"status_code": 200, "status_message": self._reason, "list": hcom.vencity()})
+            self.write({"status_code": 200, "status_message": self._reason, "list": hcom.h_com() + hcom.vencity()})
         except:
             raise tornado.web.HTTPError(500)
 
 
-class Conf(IndexHandler, AuthHandler):
+class Conf(IndexHandler):
     def get(self):
         try:
             # Writes all the conferences as a JSON
