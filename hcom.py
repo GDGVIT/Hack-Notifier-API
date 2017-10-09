@@ -1,8 +1,8 @@
 from bs4 import BeautifulSoup
 from datetime import datetime
 import requests
-
-
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 # List of things to scrape
 # start_date, end_date, location, name, description, tags, url, type, deadline
 
@@ -13,7 +13,7 @@ def h_com():
     soup = BeautifulSoup(html_doc, 'html5lib')
     list_of_events = []
     # print(soup)
-    for element in soup.find_all('div', attrs={'class': 'row'})[4].find('div', attrs={'class': 'row align-center'}):
+    for element in soup.find_all('div', attrs={'class': 'row'})[2]:
         # return
         event = {}
         try:
