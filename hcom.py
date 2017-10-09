@@ -34,10 +34,6 @@ def h_com():
         event['name'] = element.find('a', attrs={'class': 'ht-eb-card__title'}).text
         event['location'] = element.find('span', 'ht-eb-card__location__place').text
         event['description'] = element.find('div', attrs={'class','ht-eb-card__description'}).text.replace('\xa0','')
-        if element.find('div', attrs={'class': 'ht-card-tags'}):
-            event['tags'] = [i.text for i in element.find('div', attrs={'class': 'ht-card-tags'}).children]
-        else:
-            event['tags'] = []
         event['url'] = None
         event['type'] = 'hackathon'
         event['deadline'] = None
@@ -58,7 +54,6 @@ def guide_conf():
 
         event['name'] = element.find('a').text
 
-        event['tags'] = None
         event['type'] = 'conference'
         event['description'] = None
         event['deadline'] = element.find('td', attrs={
@@ -82,7 +77,6 @@ def vencity():
         event['name'] = element.find('div', 'course_info col-md-12 col-sm-12').find('h4').text
         event['deadline'] = None
         event['type'] = 'hackathon'
-        event['tags'] = element.find('div', 'cat_row').text.replace('\n', '').replace('\t', '').split(',')
         event['url'] = 'http://www.venturesity.com' + element.find('div', 'photo').find('a')['href']
         html_link = requests.get(event['url']).text
         soup_link = BeautifulSoup(html_link, 'html5lib')
