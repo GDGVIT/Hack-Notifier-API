@@ -8,6 +8,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
 def h_com():
+    return []
     html_doc = requests.get('https://www.hackathon.com/country/india', verify=False).text
     # return
     soup = BeautifulSoup(html_doc, 'html5lib')
