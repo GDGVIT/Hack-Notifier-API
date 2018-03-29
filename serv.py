@@ -8,6 +8,7 @@ import tornado.options
 import tornado.web
 
 from tornado.options import define, options
+from tornado.gen import coroutine
 
 define("port", default=8000, help="runs on the given port", type=int)
 
@@ -27,28 +28,52 @@ class ErrorHandler(tornado.web.ErrorHandler, IndexHandler):
 
 
 class AllTypes(IndexHandler):
+    @coroutine
     def get(self):
         try:
             #  Writes all the events as a JSON
-            self.write({"status_code": 200, "status_message": self._reason, "list": hcom.h_com() + hcom.guide_conf() + hcom.vencity()})
+            self.write(
+                {
+                    "status_code": 200,
+                    "status_message": self._reason,
+                    "list": hcom.h_com() + hcom.guide_conf() + hcom.vencity()
+                }
+            )
+
         except:
             raise tornado.web.HTTPError(500)
 
 
 class Hacks(IndexHandler):
+    @coroutine
     def get(self):
         try:
             #  Writes all the hackathons as a JSON
-            self.write({"status_code": 200, "status_message": self._reason, "list": hcom.h_com() + hcom.vencity()})
+            self.write(
+                {
+                    "status_code": 200,
+                    "status_message": self._reason,
+                    "list": hcom.h_com() + hcom.vencity()
+                }
+            )
+
         except:
             raise tornado.web.HTTPError(500)
 
 
 class Conf(IndexHandler):
+    @coroutine
     def get(self):
         try:
             # Writes all the conferences as a JSON
-            self.write({"status_code": 200, "status_message": self._reason, "list": hcom.guide_conf()})
+            self.write(
+                {
+                    "status_code": 200,
+                    "status_message": self._reason,
+                    "list": hcom.guide_conf()
+                }
+            )
+
         except:
             raise tornado.web.HTTPError(500)
 
