@@ -1,0 +1,26 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[packages]
+
+pymongo = "==3.4.0"
+"oauth2client" = "==4.0.0"
+"beautifulsoup4" = "==4.5.3"
+"html5lib" = "==0.999999999"
+requests = "==2.13.0"
+tornado = "==4.4.2"
+webencodings = "==0.5"
+requests-html = "*"
+
+
+[dev-packages]
+
+
+
+[requires]
+
+python_version = "3.6"
