@@ -12,7 +12,7 @@ pymongo = "==3.4.0"
 "beautifulsoup4" = "==4.5.3"
 "html5lib" = "==0.999999999"
 requests = "==2.13.0"
-tornado = "==4.4.2"
+tornado = "==5.0.1"
 webencodings = "==0.5"
 requests-html = "*"
 
