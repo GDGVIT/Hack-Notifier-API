@@ -1,13 +1,14 @@
 from bs4 import BeautifulSoup
 from datetime import datetime
 import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+# from requests.packages.urllib3.exceptions import InsecureRequestWarning
+# requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+from tornado.httpclient import AsyncHTTPClient
+import asyncio
 # List of things to scrape
 # start_date, end_date, location, name, description, tags, url, type, deadline
 
-
-def h_com():
+async def h_com():
     return []
     html_doc = requests.get('https://www.hackathon.com/country/india', verify=False).text
     # return
@@ -41,30 +42,28 @@ def h_com():
         list_of_events.append(event)
     return list_of_events
 
-
-def guide_conf():
-    html_doc = requests.get('http://www.guide2research.com/conferences/IN').text
-    soup = BeautifulSoup(html_doc, 'html5lib')
-    list_of_events = []
-    f = lambda x: str(x[1] + ' ' + x[0] + ' ' + x[-1])
-    for element in soup.find_all('div', attrs={'style': 'margin-bottom:10px;padding:1px;', 'class': 'grey myshad'}):
-        event = {}
-        event['start_date'], event['end_date'], event['location'] = element.find('tbody').find('div').text.split(' - ')
-        event['start_date'] = f(event['start_date'].replace(',', '').split(' '))
-        event['end_date'] = f(event['end_date'].replace(',', '').split(' '))
-
-        event['name'] = element.find('a').text
-
-        event['type'] = 'conference'
-        event['description'] = None
-        event['deadline'] = element.find('td', attrs={
-            'style': 'padding:1px;margin:0px;text-align:right;vertical-align:middle;width:115px;'}).text[5:]
-
-        event['url'] = element.find('tbody').contents[2].find('a').text
-
-        list_of_events.append(event)
-    return list_of_events
-
+async def guide_conf():
+    client = AsyncHTTPClient()
+    resp = await asyncio.ensure_future(client.fetch('http://www.guide2research.com/conferences/IN'))
+    if resp.error:
+        return [],resp.reason
+    else:
+        soup = BeautifulSoup(resp.body, 'html5lib')
+        list_of_events = []
+        f = lambda x: str(x[1] + ' ' + x[0] + ' ' + x[-1])
+        for element in soup.find_all('div', attrs={'style': 'margin-bottom:10px;padding:1px;', 'class': 'grey myshad'}):
+            event = {}
+            event['start_date'], event['end_date'], event['location'] = element.find('tbody').find('div').text.split(' - ')
+            event['start_date'] = f(event['start_date'].replace(',', '').split(' '))
+            event['end_date'] = f(event['end_date'].replace(',', '').split(' '))
+            event['name'] = element.find('a').text
+            event['type'] = 'conference'
+            event['description'] = None
+            event['deadline'] = element.find('td', attrs={
+                'style': 'padding:1px;margin:0px;text-align:right;vertical-align:middle;width:115px;'}).text[5:]
+            event['url'] = element.find('tbody').contents[2].find('a').text
+            list_of_events.append(event)
+        return list_of_events,None
 
 def vencity():
     html_doc = requests.get('http://www.venturesity.com/challenge/').text
@@ -85,7 +84,6 @@ def vencity():
         event['end_date'] = soup_link.find('div', 'col-md-6 date-end')('span')[0].text.split(' - ')[0]
         event['description'] = soup_link.find('div', 'box_style_1')('p')[0].text
         event['location'] = soup_link.find('p', attrs={'id': 'challenge-location'}).text
-
         list_of_events.append(event)
     return list_of_events
 
